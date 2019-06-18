@@ -1,3 +1,4 @@
+# Project directories
 data/
 data/*
 *.pyc
@@ -5,8 +6,6 @@ data/*
 .idea/
 tmp/
 .DS_Store
-DeepPath/
-MultiHopKG/
 *.pkl
 tags
 
