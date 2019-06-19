@@ -19,7 +19,7 @@ python preprocess.py --dataset <dataset_name>
 ```bash
 python train_transe_model.py --dataset <dataset_name>
 ```
-"<dataset_name>" should be one of "cd", "beauty", "clothing", "cell" (refer to utils.py).
+"<dataset_name>" should be one of "cd", "beauty", "cloth", "cell" (refer to utils.py).
 
 
 ## References
