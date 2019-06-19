@@ -1,6 +1,5 @@
 # Project directories
-data/
-data/*
+data/Amazon_CDs/
 *.pyc
 .*.swp
 .idea/
