@@ -3,16 +3,17 @@ from __future__ import absolute_import, division, print_function
 import os
 import pickle
 import gzip
+import argparse
 
 from utils import *
 from data_utils import AmazonDataset
 from knowledge_graph import KnowledgeGraph
 
 
-def generate_train_labels(dataset):
-    train_review_file = DATASET_DIR[dataset] + '/query_split/train.txt.gz'
+def generate_labels(dataset, mode='train'):
+    review_file = '{}/{}.txt.gz'.format(DATASET_DIR[dataset], mode)
     user_products = {}  # {uid: [pid,...], ...}
-    with gzip.open(train_review_file, 'r') as f:
+    with gzip.open(review_file, 'r') as f:
         for line in f:
             line = line.decode('utf-8').strip()
             arr = line.split('\t')
@@ -21,53 +22,40 @@ def generate_train_labels(dataset):
             if user_idx not in user_products:
                 user_products[user_idx] = []
             user_products[user_idx].append(product_idx)
-    save_labels(dataset, user_products, mode='train')
-
-
-def generate_test_labels(dataset):
-    test_review_file = DATASET_DIR[dataset] + '/query_split/test.txt.gz'
-    user_products = {}  # {uid: [pid,...], ...}
-    with gzip.open(test_review_file, 'r') as f:
-        for line in f:
-            line = line.decode('utf-8').strip()
-            arr = line.split('\t')
-            user_idx = int(arr[0])
-            product_idx = int(arr[1])
-            if user_idx not in user_products:
-                user_products[user_idx] = []
-            user_products[user_idx].append(product_idx)
-    save_labels(dataset, user_products, mode='test')
+    save_labels(dataset, user_products, mode=mode)
 
 
 def main():
-    datasets = [CELL, BEAUTY, CLOTH, CD]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', type=str, default=CELL, help='One of {BEAUTY, CELL, CD, CLOTH}.')
+    args = parser.parse_args()
 
-    # Create AmazonDataset instances for each dataset.
+    # Create AmazonDataset instance for dataset.
     # ========== BEGIN ========== #
-    for name in datasets:
-        print('Load', name, 'dataset from file...')
-        dataset = AmazonDataset(DATASET_DIR[name])
-        if not os.path.isdir(TMP_DIR[name]):
-            os.makedirs(TMP_DIR[name])
-        save_dataset(name, dataset)
-    # =========== END =========== #
+    print('Load', args.dataset, 'dataset from file...')
+    if not os.path.isdir(TMP_DIR[args.dataset]):
+        os.makedirs(TMP_DIR[args.dataset])
+    dataset = AmazonDataset(DATASET_DIR[args.dataset])
+    save_dataset(args.dataset, dataset)
 
     # Generate knowledge graph instance.
     # ========== BEGIN ========== #
-    for name in datasets:
-        print('Create', name, 'knowledge graph from dataset...')
-        dataset = load_dataset(name)
-        kg = KnowledgeGraph(dataset)
-        kg.compute_degrees()
-        save_kg(name, kg)
+    print('Create', args.dataset, 'knowledge graph from dataset...')
+    dataset = load_dataset(args.dataset)
+    kg = KnowledgeGraph(dataset)
+    kg.compute_degrees()
+    save_kg(args.dataset, kg)
     # =========== END =========== #
 
     # Genereate train/test labels.
-    for name in datasets:
-        print('Generate', name, 'train/test labels.')
-        generate_train_labels(name)
-        generate_test_labels(name)
+    # ========== BEGIN ========== #
+    print('Generate', args.dataset, 'train/test labels.')
+    generate_labels(args.dataset, 'train')
+    generate_labels(args.dataset, 'test')
+    # =========== END =========== #
+
 
 
 if __name__ == '__main__':
     main()
+

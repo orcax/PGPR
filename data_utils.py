@@ -15,7 +15,7 @@ class AmazonDataset(object):
         self.data_dir = data_dir
         if not self.data_dir.endswith('/'):
             self.data_dir += '/'
-        self.review_file = 'query_split/' + set_name + '.txt.gz'
+        self.review_file = set_name + '.txt.gz'
         self.load_entities()
         self.load_product_relations()
         self.load_reviews()

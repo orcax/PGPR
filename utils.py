@@ -11,25 +11,25 @@ import torch
 
 
 # Dataset names.
-CD = 'cd'
 BEAUTY = 'beauty'
 CELL = 'cell'
-CLOTH = 'clothing'
+CLOTH = 'cloth'
+CD = 'cd'
 
 # Dataset directories.
 DATASET_DIR = {
-    CD: './data/CIKM2017/reviews_CDs_and_Vinyl_5.json.gz.stem.nostop/min_count5',
-    BEAUTY: './data/CIKM2017/reviews_Beauty_5.json.gz.stem.nostop/min_count5',
-    CELL: './data/CIKM2017/reviews_Cell_Phones_and_Accessories_5.json.gz.stem.nostop/min_count5',
-    CLOTH: './data/CIKM2017/reviews_Clothing_Shoes_and_Jewelry_5.json.gz.stem.nostop/min_count5',
+    BEAUTY: './data/Amazon_Beauty',
+    CELL: './data/Amazon_Cellphones',
+    CLOTH: './data/Amazon_Clothing',
+    CD: './data/Amazon_CDs',
 }
 
 # Model result directories.
 TMP_DIR = {
-    BEAUTY: './tmp/Beauty',
-    CELL: './tmp/Cellphones_Accessories',
-    CLOTH: './tmp/Clothing',
-    CD: './tmp/CDs_Vinyl',
+    BEAUTY: './tmp/Amazon_Beauty',
+    CELL: './tmp/Amazon_Cellphones',
+    CLOTH: './tmp/Amazon_Clothing',
+    CD: './tmp/Amazon_CDs',
 }
 
 # Label files.
