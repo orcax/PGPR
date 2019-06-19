@@ -3,7 +3,7 @@ This is code related to the SIGIR 2019 paper "Reinforcement Knowledge Graph Reas
 
 
 ## Datasets
-
+Four Amazon datasets are located in "data/" directory and their split used in this paper is consistent with [1].
 
 ## Requirements
 - Python >= 3.6
