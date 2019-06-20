@@ -15,7 +15,7 @@ from torch.distributions import Categorical
 from tensorboardX import SummaryWriter
 
 from knowledge_graph import KnowledgeGraph
-from batch_env import BatchKGEnvironment
+from kg_env import BatchKGEnvironment
 from utils import *
 
 logger = None
@@ -32,10 +32,7 @@ class ActorCritic(nn.Module):
 
         self.l1 = nn.Linear(state_dim, hidden_sizes[0])
         self.l2 = nn.Linear(hidden_sizes[0], hidden_sizes[1])
-        # self.l3 = nn.Linear(512, 512)
-        # self.actor_l3 = nn.Linear(512, 512)
         self.actor = nn.Linear(hidden_sizes[1], act_dim)
-        # self.critic_l3 = nn.Linear(512, 512)
         self.critic = nn.Linear(hidden_sizes[1], 1)
 
         self.saved_actions = []
@@ -48,15 +45,11 @@ class ActorCritic(nn.Module):
         x = F.dropout(F.elu(x), p=0.5)
         out = self.l2(x)
         x = F.dropout(F.elu(out), p=0.5)
-        # x = self.l3(x)
-        # x = F.dropout(F.elu(x), p=0.5)
 
-        # actor_x = F.dropout(F.elu(self.actor_l3(x)), p=0.5)
         actor_logits = self.actor(x)
         actor_logits[1 - act_mask] = -999999.0
         act_probs = F.softmax(actor_logits, dim=-1)  # Tensor of [bs, act_dim]
 
-        # state_x = F.dropout(F.elu(self.critic_l3(x)), p=0.5)
         state_values = self.critic(x)  # Tensor of [bs, 1]
         return act_probs, state_values
 
@@ -137,13 +130,6 @@ class ACDataLoader(object):
         self._start_idx = end_idx
         return batch_uids.tolist()
 
-        # One user per batch
-        # idx = self._rand_perm[self._start_idx]
-        # batch_uids = [self.uids[idx] for _ in range(self.batch_size)]
-        # self._start_idx += 1
-        # self._has_next = self._has_next and self._start_idx < self.num_users
-        # return batch_uids
-
 
 def train(args):
     train_writer = SummaryWriter(args.log_dir)
@@ -179,9 +165,6 @@ def train(args):
 
             # Update policy
             total_rewards.append(np.sum(model.rewards))
-            # lr = args.lr * max(1e-4, 1.0 - episode / float(args.max_episodes))
-            # for pg in optimizer.param_groups:
-            #    pg['lr'] = lr
             loss, ploss, vloss, eloss = model.update(optimizer, args.device, args.ent_weight)
             total_losses.append(loss)
             total_plosses.append(ploss)
@@ -199,7 +182,6 @@ def train(args):
                 total_losses, total_plosses, total_vlosses, total_entropy, total_rewards = [], [], [], [], []
                 logger.info(
                         'epoch/step={:d}/{:d}'.format(epoch, step) +
-                        # ' | lr: {:.5f}'.format(lr) +
                         ' | loss={:.5f}'.format(avg_loss) +
                         ' | ploss={:.5f}'.format(avg_ploss) +
                         ' | vloss={:.5f}'.format(avg_vloss) +
@@ -212,16 +194,15 @@ def train(args):
                 train_writer.add_scalar('train/reward', avg_reward, step)
         ### END of epoch ###
 
-        if epoch > 0 and epoch % 10 == 0:
-            policy_file = '{}/policy_model_epoch_{}.ckpt'.format(args.log_dir, epoch)
-            logger.info("Save model to " + policy_file)
-            torch.save(model.state_dict(), policy_file)
+        policy_file = '{}/policy_model_epoch_{}.ckpt'.format(args.log_dir, epoch)
+        logger.info("Save model to " + policy_file)
+        torch.save(model.state_dict(), policy_file)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str, default='beauty', help='One of {clothing, cell, beauty, cd}')
-    parser.add_argument('--name', type=str, default='train_bac', help='directory name.')
+    parser.add_argument('--name', type=str, default='train_agent', help='directory name.')
     parser.add_argument('--seed', type=int, default=123, help='random seed.')
     parser.add_argument('--gpu', type=str, default='0', help='gpu device.')
     parser.add_argument('--epochs', type=int, default=50, help='Max number of epochs.')
@@ -232,7 +213,6 @@ def main():
     parser.add_argument('--gamma', type=float, default=0.99, help='reward discount factor.')
     parser.add_argument('--ent_weight', type=float, default=1e-3, help='weight factor for entropy loss')
     parser.add_argument('--act_dropout', type=float, default=0.5, help='action dropout rate.')
-    parser.add_argument('--hop', type=int, default=1, help='embed hop')
     parser.add_argument('--state_history', type=int, default=1, help='state history length')
     parser.add_argument('--hidden', type=int, nargs='*', default=[512, 256], help='number of samples')
     args = parser.parse_args()
@@ -254,3 +234,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

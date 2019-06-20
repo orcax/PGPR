@@ -55,7 +55,6 @@ def train(args):
                             'Lr: {:.5f} | '.format(lr) +
                             'Smooth loss: {:.5f}'.format(smooth_loss))
                 smooth_loss = 0.0
-            break
 
         torch.save(model.state_dict(), '{}/transe_model_sd_epoch_{}.ckpt'.format(args.log_dir, epoch))
 

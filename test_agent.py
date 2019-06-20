@@ -17,12 +17,10 @@ from tensorboardX import SummaryWriter
 import threading
 from functools import reduce
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from kgrl.knowledge_graph import KnowledgeGraph
-from kgrl.batch_env import BatchKGEnvironment
-from kgrl.kg_utils import *
-from kgrl.batch_actor_critic import ActorCritic
+from knowledge_graph import KnowledgeGraph
+from kg_env import BatchKGEnvironment
+from train_agent import ActorCritic
+from utils import *
 
 
 def evaluate(topk_matches, test_user_products):
@@ -68,56 +66,6 @@ def evaluate(topk_matches, test_user_products):
     avg_hit = np.mean(hits) * 100
     print('NDCG={:.3f} |  Recall={:.3f} | HR={:.3f} | Precision={:.3f} | Invalid users={}'.format(
             avg_ndcg, avg_recall, avg_hit, avg_precision, len(invalid_users)))
-
-
-'''
-def beam_search(env, model, uid, device):
-    state_pool = [env.reset(uid)]
-    path_pool = [env._path]
-    acts_pool = [env._get_actions(path_pool[0], False)]
-    actspace = list(range(len(acts_pool[0])))
-    act_mask = np.zeros(model.act_dim, dtype=np.uint8)
-    act_mask[actspace] = 1
-    actmask_pool = [act_mask]
-    topk = [10, 5, 2]
-    for hop in range(3):
-        state_tensor = torch.FloatTensor(np.vstack(state_pool)).to(device)
-        actmask_tensor = torch.ByteTensor(np.vstack(actmask_pool)).to(device)
-        probs, state_value = model((state_tensor, actmask_tensor))  # act_probs: [act_dim, ], state_value: [1, ]
-        probs = probs + actmask_tensor.float()
-        best_idxs = np.argsort(probs.cpu().detach().numpy())[:, -topk[hop]:]
-        # print(state_tensor.shape, actmask_tensor.shape, best_idxs.shape)
-
-        new_state_pool, new_path_pool, new_acts_pool, new_actmask_pool = [], [], [], []
-        for row in range(best_idxs.shape[0]):
-            path = path_pool[row]
-            for idx in best_idxs[row]:
-                if idx >= len(acts_pool[row]):
-                    continue
-                relation, next_node_id = acts_pool[row][idx]  # (relation, next_node_id)
-                if relation == SELF_LOOP:
-                    next_node_type = path[-1][1]
-                else:
-                    next_node_type = KG_RELATION[path[-1][1]][relation]
-                new_path = path + [(relation, next_node_type, next_node_id)]
-                new_path_pool.append(new_path)
-                if hop < 2:
-                    new_state = env._get_state(new_path)
-                    new_state_pool.append(new_state)
-                    new_acts = env._get_actions(new_path, False)
-                    new_acts_pool.append(new_acts)
-                    new_actspace = list(range(len(new_acts)))
-                    new_act_mask = np.zeros(model.act_dim, dtype=np.uint8)
-                    new_act_mask[new_actspace] = 1
-                    new_actmask_pool.append(new_act_mask)
-        path_pool = new_path_pool
-        state_pool = new_state_pool
-        acts_pool = new_acts_pool
-        actmask_pool = new_actmask_pool
-
-    paths = [path for path in path_pool if path[-1][1] == PRODUCT]
-    return paths
-'''
 
 
 def batch_beam_search(env, model, uids, device, topk=[25, 5, 1]):
@@ -170,9 +118,9 @@ def batch_beam_search(env, model, uids, device, topk=[25, 5, 1]):
 
 def predict_paths(policy_file, path_file, args):
     print('Predicting paths...')
-    env = BatchKGEnvironment(args.dataset, args.max_acts, max_path_len=args.max_path_len, embed_hop=args.hop, state_history=args.state_history)
+    env = BatchKGEnvironment(args.dataset, args.max_acts, max_path_len=args.max_path_len, state_history=args.state_history)
     pretrain_sd = torch.load(policy_file)
-    model = ActorCritic(env.state_dim, env.act_dim).to(args.device)
+    model = ActorCritic(env.state_dim, env.act_dim, gamma=args.gamma, hidden_sizes=args.hidden).to(args.device)
     model_sd = model.state_dict()
     model_sd.update(pretrain_sd)
     model.load_state_dict(model_sd)
@@ -196,8 +144,8 @@ def predict_paths(policy_file, path_file, args):
     pickle.dump(predicts, open(path_file, 'wb'))
 
 
-def evaluate_paths(path_file, train_labels, test_labels, embed_hop):
-    embeds = load_embed(args.dataset, embed_hop)
+def evaluate_paths(path_file, train_labels, test_labels):
+    embeds = load_embed(args.dataset)
     user_embeds = embeds[USER]
     purchase_embeds = embeds[PURCHASE][0]
     product_embeds = embeds[PRODUCT]
@@ -266,29 +214,31 @@ def test(args):
     if args.run_path:
         predict_paths(policy_file, path_file, args)
     if args.run_eval:
-        evaluate_paths(path_file, train_labels, test_labels, args.hop)
+        evaluate_paths(path_file, train_labels, test_labels)
 
 
 if __name__ == '__main__':
     boolean = lambda x: (str(x).lower() == 'true')
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str, default='beauty', help='One of {clothing, beauty, cell}')
+    parser.add_argument('--dataset', type=str, default='beauty', help='One of {cloth, beauty, cell, cd}')
+    parser.add_argument('--name', type=str, default='train_agent', help='directory name.')
     parser.add_argument('--seed', type=int, default=123, help='random seed.')
     parser.add_argument('--gpu', type=str, default='0', help='gpu device.')
+    parser.add_argument('--epochs', type=int, default=50, help='num of epochs.')
     parser.add_argument('--max_acts', type=int, default=250, help='Max number of actions.')
     parser.add_argument('--max_path_len', type=int, default=3, help='Max path length.')
-    parser.add_argument('--name', type=str, default='train_bac_hop1_acts250', help='directory name.')
-    parser.add_argument('--epochs', type=int, default=50, help='num of epochs.')
-    parser.add_argument('--run_path', type=boolean, default=False, help='Generate predicted path? (takes long time)')
-    parser.add_argument('--run_eval', type=boolean, default=True, help='Run evaluation?')
-    parser.add_argument('--add_products', type=boolean, default=False, help='Add products up to 10')
-    parser.add_argument('--hop', type=int, default=1, help='embed hop')
-    parser.add_argument('--topk', type=int, nargs='*', default=[25, 5, 1], help='number of samples')
+    parser.add_argument('--gamma', type=float, default=0.99, help='reward discount factor.')
     parser.add_argument('--state_history', type=int, default=1, help='state history length')
+    parser.add_argument('--hidden', type=int, nargs='*', default=[512, 256], help='number of samples')
+    parser.add_argument('--add_products', type=boolean, default=False, help='Add predicted products up to 10')
+    parser.add_argument('--topk', type=int, nargs='*', default=[25, 5, 1], help='number of samples')
+    parser.add_argument('--run_path', type=boolean, default=True, help='Generate predicted path? (takes long time)')
+    parser.add_argument('--run_eval', type=boolean, default=False, help='Run evaluation?')
     args = parser.parse_args()
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     args.device = torch.device('cuda:0') if torch.cuda.is_available() else 'cpu'
-    args.log_dir = DATA_DIR[args.dataset] + '/' + args.name
-    print(args)
+
+    args.log_dir = TMP_DIR[args.dataset] + '/' + args.name
     test(args)
+
