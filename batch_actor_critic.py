@@ -14,11 +14,9 @@ from torch.autograd import Variable
 from torch.distributions import Categorical
 from tensorboardX import SummaryWriter
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from kgrl.knowledge_graph import KnowledgeGraph
-from kgrl.batch_env import BatchKGEnvironment
-from kgrl.kg_utils import *
+from knowledge_graph import KnowledgeGraph
+from batch_env import BatchKGEnvironment
+from utils import *
 
 logger = None
 
@@ -148,11 +146,9 @@ class ACDataLoader(object):
 
 
 def train(args):
-    global logger
     train_writer = SummaryWriter(args.log_dir)
 
-    env = BatchKGEnvironment(args.dataset, args.max_acts, max_path_len=args.max_path_len, embed_hop=args.hop,
-                             state_history=args.state_history)
+    env = BatchKGEnvironment(args.dataset, args.max_acts, max_path_len=args.max_path_len, state_history=args.state_history)
     uids = list(env.kg(USER).keys())
     dataloader = ACDataLoader(uids, args.batch_size)
     model = ActorCritic(env.state_dim, env.act_dim, gamma=args.gamma, hidden_sizes=args.hidden).to(args.device)
@@ -222,10 +218,10 @@ def train(args):
             torch.save(model.state_dict(), policy_file)
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str, default='cd', help='One of {clothing, cell, beauty, cd}')
-    parser.add_argument('--name', type=str, default='train_bac_hop1_acts250', help='directory name.')
+    parser.add_argument('--dataset', type=str, default='beauty', help='One of {clothing, cell, beauty, cd}')
+    parser.add_argument('--name', type=str, default='train_bac', help='directory name.')
     parser.add_argument('--seed', type=int, default=123, help='random seed.')
     parser.add_argument('--gpu', type=str, default='0', help='gpu device.')
     parser.add_argument('--epochs', type=int, default=50, help='Max number of epochs.')
@@ -243,11 +239,18 @@ if __name__ == '__main__':
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
     args.device = torch.device('cuda:0') if torch.cuda.is_available() else 'cpu'
-    args.log_dir = DATA_DIR[args.dataset] + '/' + args.name
+
+    args.log_dir = '{}/{}'.format(TMP_DIR[args.dataset], args.name)
     if not os.path.isdir(args.log_dir):
         os.makedirs(args.log_dir)
+
+    global logger
     logger = get_logger(args.log_dir + '/train_log.txt')
     logger.info(args)
 
     set_random_seed(args.seed)
     train(args)
+
+
+if __name__ == '__main__':
+    main()

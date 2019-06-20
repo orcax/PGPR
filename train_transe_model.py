@@ -5,8 +5,6 @@ import sys
 import argparse
 import random
 import numpy as np
-import logging
-import logging.handlers
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -116,7 +114,7 @@ def main():
     parser.add_argument('--dataset', type=str, default=BEAUTY, help='One of {beauty, cd, cell, clothing}.')
     parser.add_argument('--name', type=str, default='train_transe_model', help='model name.')
     parser.add_argument('--seed', type=int, default=123, help='random seed.')
-    parser.add_argument('--gpu', type=str, default='cuda:1', help='gpu device.')
+    parser.add_argument('--gpu', type=str, default='1', help='gpu device.')
     parser.add_argument('--epochs', type=int, default=30, help='number of epochs to train.')
     parser.add_argument('--batch_size', type=int, default=64, help='batch size.')
     parser.add_argument('--lr', type=float, default=0.5, help='learning rate.')
@@ -128,12 +126,15 @@ def main():
     parser.add_argument('--steps_per_checkpoint', type=int, default=200, help='Number of steps for checkpoint.')
     args = parser.parse_args()
 
+    os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu
+    args.device = torch.device('cuda:0') if torch.cuda.is_available() else 'cpu'
+
     args.log_dir = '{}/{}'.format(TMP_DIR[args.dataset], args.name)
     if not os.path.isdir(args.log_dir):
         os.makedirs(args.log_dir)
+
     global logger
     logger = get_logger(args.log_dir + '/train_log.txt')
-    args.device = torch.device(args.gpu) if torch.cuda.is_available() else 'cpu'
     logger.info(args)
 
     set_random_seed(args.seed)

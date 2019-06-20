@@ -8,10 +8,8 @@ import random
 import torch
 from datetime import datetime
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from kgrl.knowledge_graph import KnowledgeGraph
-from kgrl.kg_utils import *
+from knowledge_graph import KnowledgeGraph
+from utils import *
 
 
 class KGState(object):
@@ -41,12 +39,12 @@ class KGState(object):
 
 
 class BatchKGEnvironment(object):
-    def __init__(self, dataset_str, max_acts, max_path_len=3, state_history=1, embed_hop=1):
+    def __init__(self, dataset_str, max_acts, max_path_len=3, state_history=1):
         self.max_acts = max_acts
         self.act_dim = max_acts + 1  # Add self-loop action, whose act_idx is always 0.
         self.max_num_nodes = max_path_len + 1  # max number of hops (= #nodes - 1)
         self.kg = load_kg(dataset_str)
-        self.embeds = load_embed(dataset_str, embed_hop)
+        self.embeds = load_embed(dataset_str)
         self.embed_size = self.embeds[USER].shape[1]
         self.embeds[SELF_LOOP] = (np.zeros(self.embed_size), 0.0)
         self.state_gen = KGState(self.embed_size, history_len=state_history)
@@ -264,13 +262,11 @@ def main():
     random.seed(123)
     np.random.seed(123)
 
-    dataset_str = 'beauty'
+    dataset_str = 'cloth'
     max_acts = 250
     max_path_len = 3
-    env = BatchKGEnvironment(dataset_str, max_acts, max_path_len, embed_hop=2)
+    env = BatchKGEnvironment(dataset_str, max_acts, max_path_len)
     print(env.u_p_scales.shape, len(env.kg(USER).keys()))
-
-    return
 
     # Test case 1
     print('Test case 1')
