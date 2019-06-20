@@ -233,7 +233,7 @@ if __name__ == '__main__':
     parser.add_argument('--add_products', type=boolean, default=False, help='Add predicted products up to 10')
     parser.add_argument('--topk', type=int, nargs='*', default=[25, 5, 1], help='number of samples')
     parser.add_argument('--run_path', type=boolean, default=True, help='Generate predicted path? (takes long time)')
-    parser.add_argument('--run_eval', type=boolean, default=False, help='Run evaluation?')
+    parser.add_argument('--run_eval', type=boolean, default=True, help='Run evaluation?')
     args = parser.parse_args()
 
     os.environ['CUDA_VISIBLE_DEVICES'] = args.gpu

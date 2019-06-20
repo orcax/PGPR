@@ -26,9 +26,10 @@ python train_agent.py --dataset <dataset_name>
 ```
 4. Evaluation
 ```bash
-python test_agent.py --dataset <dataset_name>
+python test_agent.py --dataset <dataset_name> --run_path True --run_eval True
 ```
-
+If "run_path" is True, the program will generate paths for recommendation according to the trained policy.
+If "run_eval" is True, the program will evaluate the recommendation performance based on the resulting paths.
 
 ## References
 [1] Yongfeng Zhang, Qingyao Ai, Xu Chen, W. Bruce Croft. "Joint Representation Learning for Top-N Recommendation with Heterogeneous Information Sources". In Proceedings of CIKM. 2017.

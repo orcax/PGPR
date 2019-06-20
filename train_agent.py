@@ -1,5 +1,3 @@
-# This is Vanilla Policy Gradient with Value baseline.
-# Refer to https://github.com/pytorch/examples/blob/master/reinforcement_learning/actor_critic.py
 from __future__ import absolute_import, division, print_function
 
 import sys
