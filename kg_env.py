@@ -222,7 +222,6 @@ class BatchKGEnvironment(object):
             act_idx = batch_act_idx[i]
             _, curr_node_type, curr_node_id = self._batch_path[i][-1]
             relation, next_node_id = self._batch_curr_actions[i][act_idx]
-            # TODO: check act_idx is valid?
             if relation == SELF_LOOP:
                 next_node_type = curr_node_type
             else:

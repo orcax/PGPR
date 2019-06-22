@@ -204,23 +204,6 @@ class KnowledgeGraph(object):
                 intersect_nodes = wids_u.intersection(wids_u_p)
                 tmp_paths = [(uid, x, uid_p, pid) for x in intersect_nodes]
                 paths.extend(tmp_paths)
-        # elif len(pattern) == 5:  # DOES NOT WORK SO FAR!
-        #    nodes_from_user = set(self.G[USER][uid][pattern[1][0]])  # USER->MENTION->WORD
-        #    nodes_from_product = set(self.G[PRODUCT][pid][pattern[-1][0]])
-        #    if pattern[-2][1] == USER:
-        #        nodes_from_product.difference([uid])
-        #    count = 0
-        #    for wid in nodes_from_user:
-        #        pids_from_wid = set(self.G[WORD][wid][pattern[2][0]])  # USER->MENTION->WORD->DESCRIBE->PRODUCT
-        #        pids_from_wid = pids_from_wid.difference([pid])  # exclude target product
-        #        for nid in nodes_from_product:
-        #            if pattern[-2][1] == WORD:
-        #                if nid == wid:
-        #                    continue
-        #            other_pids = set(self.G[pattern[-2][1]][nid][pattern[-2][0]])
-        #            intersect_nodes = pids_from_wid.intersection(other_pids)
-        #            count += len(intersect_nodes)
-        #    return count
 
         return paths
 
@@ -236,3 +219,4 @@ def check_test_path(dataset_str, kg):
                 count += len(tmp_path)
             if count == 0:
                 print(uid, pid)
+

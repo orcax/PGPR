@@ -27,7 +27,7 @@ def generate_labels(dataset, mode='train'):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str, default=CELL, help='One of {BEAUTY, CELL, CD, CLOTH}.')
+    parser.add_argument('--dataset', type=str, default=BEAUTY, help='One of {BEAUTY, CELL, CD, CLOTH}.')
     args = parser.parse_args()
 
     # Create AmazonDataset instance for dataset.
@@ -53,7 +53,6 @@ def main():
     generate_labels(args.dataset, 'train')
     generate_labels(args.dataset, 'test')
     # =========== END =========== #
-
 
 
 if __name__ == '__main__':

@@ -10,7 +10,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.autograd import Variable
 from torch.distributions import Categorical
-from tensorboardX import SummaryWriter
 
 from knowledge_graph import KnowledgeGraph
 from kg_env import BatchKGEnvironment
@@ -130,8 +129,6 @@ class ACDataLoader(object):
 
 
 def train(args):
-    train_writer = SummaryWriter(args.log_dir)
-
     env = BatchKGEnvironment(args.dataset, args.max_acts, max_path_len=args.max_path_len, state_history=args.state_history)
     uids = list(env.kg(USER).keys())
     dataloader = ACDataLoader(uids, args.batch_size)
@@ -185,11 +182,6 @@ def train(args):
                         ' | vloss={:.5f}'.format(avg_vloss) +
                         ' | entropy={:.5f}'.format(avg_entropy) +
                         ' | reward={:.5f}'.format(avg_reward))
-                train_writer.add_scalar('train/loss', avg_loss, step)
-                train_writer.add_scalar('train/ploss', avg_ploss, step)
-                train_writer.add_scalar('train/vloss', avg_vloss, step)
-                train_writer.add_scalar('train/entropy', avg_entropy, step)
-                train_writer.add_scalar('train/reward', avg_reward, step)
         ### END of epoch ###
 
         policy_file = '{}/policy_model_epoch_{}.ckpt'.format(args.log_dir, epoch)
@@ -199,7 +191,7 @@ def train(args):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataset', type=str, default='beauty', help='One of {clothing, cell, beauty, cd}')
+    parser.add_argument('--dataset', type=str, default=BEAUTY, help='One of {clothing, cell, beauty, cd}')
     parser.add_argument('--name', type=str, default='train_agent', help='directory name.')
     parser.add_argument('--seed', type=int, default=123, help='random seed.')
     parser.add_argument('--gpu', type=str, default='0', help='gpu device.')
