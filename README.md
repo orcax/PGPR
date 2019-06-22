@@ -17,14 +17,17 @@ Complete four datasets can be downloaded [here](https://drive.google.com/uc?expo
 python preprocess.py --dataset <dataset_name>
 ```
 "<dataset_name>" should be one of "cd", "beauty", "cloth", "cell" (refer to utils.py).
+
 2. Train knowledge graph embeddings (TransE in this case):
 ```bash
 python train_transe_model.py --dataset <dataset_name>
 ```
+
 3. Train RL agent:
 ```bash
 python train_agent.py --dataset <dataset_name>
 ```
+
 4. Evaluation
 ```bash
 python test_agent.py --dataset <dataset_name> --run_path True --run_eval True
