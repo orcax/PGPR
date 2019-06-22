@@ -1,10 +1,9 @@
 # Reinforcement Knowledge Graph Reasoning for Explainable Recommendation
-This is code related to the SIGIR 2019 paper "Reinforcement Knowledge Graph Reasoning for Explainable Recommendation" [2].
-
+This repository contains the source code of the SIGIR 2019 paper "Reinforcement Knowledge Graph Reasoning for Explainable Recommendation" [2].
 
 ## Datasets
-Two Amazon datasets (Amazon_Beauty, Amazon_Cellphones) are located in "data/" directory and the split is consistent with [1].
-Complete four datasets can be downloaded [here](https://drive.google.com/uc?export=download&confirm=Tiux&id=1CL4Pjumj9d7fUDQb1_leIMOot73kVxKB).
+Two Amazon datasets (Amazon_Beauty, Amazon_Cellphones) are available in the "data/" directory and the split is consistent with [1].
+All four datasets used in this paper can be downloaded [here](https://drive.google.com/uc?export=download&confirm=Tiux&id=1CL4Pjumj9d7fUDQb1_leIMOot73kVxKB).
 
 ## Requirements
 - Python >= 3.6
