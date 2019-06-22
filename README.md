@@ -4,7 +4,7 @@ This is code related to the SIGIR 2019 paper "Reinforcement Knowledge Graph Reas
 
 ## Datasets
 Two Amazon datasets (Amazon_Beauty, Amazon_Cellphones) are located in "data/" directory and the split is consistent with [1].
-Complete four datasets can be downloaded [here](https://drive.google.com/file/d/1CL4Pjumj9d7fUDQb1_leIMOot73kVxKB/view?usp=sharing).
+Complete four datasets can be downloaded [here](https://drive.google.com/uc?export=download&confirm=Tiux&id=1CL4Pjumj9d7fUDQb1_leIMOot73kVxKB).
 
 ## Requirements
 - Python >= 3.6
